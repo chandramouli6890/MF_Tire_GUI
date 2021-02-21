@@ -36,38 +36,46 @@ function plotscalar(iteration,fval)
 % at each iteration.
 
 if iteration == 0
-    axes(findobj(gcf,'Tag','Fval_axes'))
+    axes(findobj(gcf,'Tag','Fval_axes'))    
     plotfval = plot(iteration,fval,'b.');    
-    title(getString(message('MATLAB:funfun:optimplots:TitleCurrentFunctionValue',sprintf('%g',fval))),'interp','none');
-    xlabel(getString(message('MATLAB:funfun:optimplots:LabelIteration')),'interp','none');
+    title(['CurrentFunctionValue ' sprintf('%g',fval)]);
+    xlabel('LabelIteration');
     set(plotfval,'Tag','optimplotfval');
-    ylabel(getString(message('MATLAB:funfun:optimplots:LabelFunctionValue')),'interp','none')
+    ylabel('LabelFunctionValue');
 else
-    allaxes = findall(gcf,'type','axes');    
-    plotfval= get(allaxes(2),'Children');
-    newX = [get(plotfval,'Xdata') iteration];
-    newY = [get(plotfval,'Ydata') fval];
-    set(plotfval,'Xdata',newX, 'Ydata',newY);
-    set(get(gca,'Title'),'String',getString(message('MATLAB:funfun:optimplots:TitleCurrentFunctionValue',sprintf('%g',fval))));
+    all_lines= findobj(gcf,'Type', 'Line');
+    line_optimfval= findobj(all_lines,'Tag','optimplotfval');
+    newX = [get(line_optimfval,'Xdata') iteration];
+    newY = [get(line_optimfval,'Ydata') fval];
+    set(line_optimfval,'Xdata',newX, 'Ydata',newY);
+    
+    % find the correct axes
+    all_axes= findobj(gcf,'Type', 'Axes');     
+    for i= 1:length(all_axes)
+        if ~isempty(regexp(all_axes(i).Title.String,'Current*','once'))
+            % change the axis title
+            title(all_axes(i),['CurrentFunctionValue ',sprintf('%g',fval)]);
+        end
+    end
 end
 
 function plotvector(iteration,fval)
 % PLOTVECTOR creates or updates a bar plot of the function values or
 % residuals at the current iteration.
 if iteration == 0
-    xlabelText = getString(message('MATLAB:funfun:optimplots:LabelNumberOfFunctionValues0',sprintf('%g',length(fval))));
+    xlabelText = ['NumberOfFunctionValues ',sprintf('%g',length(fval))];
     % display up to the first 100 values
     if numel(fval) > 100
-        xlabelText = {xlabelText,getString(message('MATLAB:funfun:optimplots:LabelShowingOnlyFirst100Values'))};
+        xlabelText = {xlabelText,['ShowingOnlyFirst100Values']};
         fval = fval(1:100);
     end
     plotfval = bar(fval);
-    title(getString(message('MATLAB:funfun:optimplots:TitleCurrentFunctionValues')),'interp','none');
+    title(['TitleCurrentFunctionValues']);
     set(plotfval,'edgecolor','none')
     set(gca,'xlim',[0,1 + length(fval)])
     xlabel(xlabelText,'interp','none')
     set(plotfval,'Tag','optimplotfval');
-    ylabel(getString(message('MATLAB:funfun:optimplots:LabelFunctionValue')),'interp','none')
+    ylabel(['FunctionValue'])
 else
     plotfval = findobj(get(gca,'Children'),'Tag','optimplotfval');
     % display up to the first 100 values

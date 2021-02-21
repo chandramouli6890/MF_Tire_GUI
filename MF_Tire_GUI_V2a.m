@@ -61,7 +61,7 @@ guidata(hObject, handles);
 % UIWAIT makes MF_Tire_GUI_V2a wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
-load([pwd '\MF52_par0.mat'])
+load(fullfile(pwd,'MF52_par0.mat'))
 handles.Start_MF52Par= [Pcx1 Pdx1 Pdx2 Pex1 Pex2 Pex3 Pex4 Pkx1 Pkx2 Pkx3 Phx1 Phx2 Pvx1 Pvx2];
 guidata(hObject,handles);
 
@@ -914,17 +914,16 @@ function StartFitting_Button_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 if isfield(handles,'Fitter')
     if get(handles.DefaultSettings_checkbox,'Value')
-        optim_opts= optimset('MaxFunEvals',1e3,'MaxIter',...
-                        1e3,'TolFun',1e1,'TolX',1e1);
+        optim_opts= optimset('MaxFunEvals',1e4,'MaxIter',...
+                        1e4,'TolFun',1e-3,'TolX',1e-3);
     else        
-        optim_opts= optimset('TolX',get(handles.TolX_editT,'String'),...
-                    'TolFun',get(handles.TolFun_editT,'String'),...
-                    'MaxIter',get(handles.MaxIter_editT,'String'),...
-                    'MaxFunEval',get(handles.MaxFunEval_editT,'String'),...
-                    'PlotFcns',get(handles.PlotFcns_editT,'String'));
+        optim_opts= optimset('TolX',str2double(get(handles.TolX_editT,'String')),...
+                    'TolFun',str2double(get(handles.TolFun_editT,'String')),...
+                    'MaxIter',str2double(get(handles.MaxIter_editT,'String')),...
+                    'MaxFunEval',str2double(get(handles.MaxFunEval_editT,'String')));
     end
     if get(handles.PlotOpt_checkbox,'Value')
-        optim_opts= optimset('OutputFcn',@optimplotfval2);
+        optim_opts= optimset(optim_opts,'OutputFcn',@optimplotfval2);
         handles.Fitter.plot_flag= 1;
     end
     set(handles.Error_text_Fitter,'ForegroundColor',[0 1 0]);
@@ -961,6 +960,9 @@ else
     warning(error_txt);
     set(handles.Error_text_Fitter,'String',error_txt);
 end
+
+% dummy callback for the hold on checkbox
+function hold_checkbox_Callback(hObject, eventdata, handles)
 
 % --- Executes during object creation, after setting all properties.
 function TolX_editT_CreateFcn(hObject, eventdata, handles)
