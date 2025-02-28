@@ -1,2 +1,32 @@
+# Ignore build directories
+/build/
+/CMakeFiles/
+/CMakeCache.txt
+/cmake_install.cmake
+
+# Ignore Qt Creator & CMake generated files
+*.pro.user
+*.pro.user.*
+*.moc
+*.qmake.stash
+Makefile
+CTestTestfile.cmake
+DartConfiguration.tcl
+
+# Ignore compiled binaries
+/bin/
+/lib/
+/obj/
+/*.o
+/*.so
+/*.a
+/*.exe
+
+# Ignore logs & temporary files
+*.log
+*.swp
+*.swo
+
 # don't track zip files
 *.zip
+
