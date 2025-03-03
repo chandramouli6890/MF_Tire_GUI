@@ -64,9 +64,15 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   title.setColor(Qt::gray);
 
   plot_->setTitle(title);
+  plot_->setAxisScale(QwtPlot::xBottom, -5, 5);
+  plot_->setAxisScale(QwtPlot::yLeft, -5000, 5000);
+
+  QwtPlotGrid *grid = new QwtPlotGrid();
+  grid->attach(plot_);
 
   curve_ = new QwtPlotCurve();
-  curve_->setPen(Qt::green, 2);
+  // curve_->setPen(Qt::green, 4);
+  curve_->setPen(Qt::red, 4);
   curve_->attach(plot_);
 
   layout->addWidget(plot_, 0, 4, 10, 4);

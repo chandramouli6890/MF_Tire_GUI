@@ -4,6 +4,7 @@
 #include "LabeledSlider.hpp"
 #include "qwt_plot.h"
 #include "qwt_plot_curve.h"
+#include "qwt_plot_grid.h"
 #include <QMainWindow>
 
 struct Value {
