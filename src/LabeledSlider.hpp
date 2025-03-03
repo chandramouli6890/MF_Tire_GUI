@@ -8,8 +8,10 @@
 #include <QVBoxLayout>
 
 class LabeledSlider : public QWidget {
+  Q_OBJECT
 public:
-  LabeledSlider(const QString &text, QWidget *parent = nullptr);
+  LabeledSlider(const QString &text, double slider_min, double slider_max,
+                QWidget *parent = nullptr);
 
 private:
   QVBoxLayout *main_layout_;
@@ -17,6 +19,13 @@ private:
   RotatedLabel *label_;
   QSlider *slider_;
   QLCDNumber *lcd_display_;
+  double min_{};
+  double max_{};
+
+  void updateLCDDisplay(int value);
+
+signals:
+  void valueChanged(int value);
 };
 
 #endif
