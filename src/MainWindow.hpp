@@ -18,6 +18,9 @@ struct Params {
   Value shape;
   Value peak;
   Value curvature;
+  Value longitudinal_slip;
+  double vertical_force{3000.0};
+  bool is_lateral{false};
 };
 
 class MainWindow : public QMainWindow {

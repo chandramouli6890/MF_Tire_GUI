@@ -9,10 +9,12 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   // clang-format off
-  params_ = new Params{{  4.0, 12.0,  8.0},  // stiffness
-                       {  1.0,  2.0,  0.5},  // shape
-                       {  0.1,  1.9,  1.1},  // peak 
-                       {-10.0,  1.0, -4.5}}; // curvature
+  params_ = new Params{{  4.0, 12.0,  8.0}, // stiffness
+                       {  1.0,  2.0,  0.5}, // shape
+                       {  0.1,  1.9,  1.1}, // peak
+                       {-10.0,  1.0, -4.5}, // curvature
+                       { -1.0,  1.0},       // longitudinal_slip
+                       3000.0};             // vertical_force
   // clang-format on
 
   // setStyleSheet("background-color: rgb(70,70,70);");
@@ -27,6 +29,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
       0, 0, 1, 4);
 
   layout->addWidget(new QComboBox(), 1, 0, 1, 4);
+
+  // horizontal spacer
+  layout->addItem(
+      new QSpacerItem(70, INT_MIN, QSizePolicy::Minimum, QSizePolicy::Minimum),
+      0, 4);
 
   layout->addItem(
       new QSpacerItem(INT_MIN, 0, QSizePolicy::Minimum, QSizePolicy::Minimum),
@@ -64,8 +71,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   title.setColor(Qt::gray);
 
   plot_->setTitle(title);
-  plot_->setAxisScale(QwtPlot::xBottom, -5, 5);
+  plot_->setAxisScale(QwtPlot::xBottom, -1, 1);
   plot_->setAxisScale(QwtPlot::yLeft, -5000, 5000);
+  plot_->setAxisTitle(QwtPlot::xBottom, "Longitudinal Force [N]");
+  plot_->setAxisTitle(QwtPlot::yLeft, "Longitudinal Slip [-]");
 
   QwtPlotGrid *grid = new QwtPlotGrid();
   grid->attach(plot_);
@@ -75,7 +84,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   curve_->setPen(Qt::red, 4);
   curve_->attach(plot_);
 
-  layout->addWidget(plot_, 0, 4, 10, 4);
+  layout->addWidget(plot_, 0, 5, 10, 4);
 
   widget->setLayout(layout);
   connect(stiffness_slider_, &LabeledSlider::valueChanged, this,
@@ -121,14 +130,14 @@ void MainWindow::curvatureChanged(int val) {
 
 void MainWindow::updatePlot() {
   const int points = 1000;
-  const double slip_min = -5.0;
-  const double slip_max = 5.0;
+  const double slip_min = params_->longitudinal_slip.min;
+  const double slip_max = params_->longitudinal_slip.max;
   QVector<double> xData(points), yData(points);
   const double B = params_->stiffness.val;
   const double C = params_->shape.val;
   const double D = params_->peak.val;
   const double E = params_->curvature.val;
-  const double Fz = 3000;
+  const double Fz = params_->vertical_force;
 
   for (int i = 0; i < points; i++) {
     const double slip = slip_min + (slip_max - slip_min) * (i / (double)points);
