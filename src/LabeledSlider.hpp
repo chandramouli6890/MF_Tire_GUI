@@ -2,8 +2,10 @@
 #define LABELEDSLIDER_H
 
 #include "RotatedLabel.hpp"
+#include <QFont>
+#include <QFontDatabase>
 #include <QHBoxLayout>
-#include <QLCDNumber>
+#include <QLabel>
 #include <QSlider>
 #include <QVBoxLayout>
 
@@ -18,11 +20,11 @@ private:
   QHBoxLayout *hlayout_;
   RotatedLabel *label_;
   QSlider *slider_;
-  QLCDNumber *lcd_display_;
+  QLabel *slider_display_;
   double min_{};
   double max_{};
 
-  void updateLCDDisplay(int value);
+  void updateDisplay(int value);
 
 signals:
   void valueChanged(int value);

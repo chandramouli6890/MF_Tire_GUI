@@ -1,6 +1,5 @@
 #include "MainWindow.hpp"
 
-#include <iostream>
 #include <yaml-cpp/yaml.h>
 
 #include "qwt_symbol.h"
@@ -18,7 +17,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
                        3000.0};             // vertical_force
   // clang-format on
 
-  // setStyleSheet("background-color: rgb(70,70,70);");
+  setWindowTitle("Magic-Formula Tire Visualizer");
+  setStyleSheet("background-color: rgb(70,70,70);");
   setFixedSize(1'600, 800);
 
   QWidget *widget = new QWidget(this);
@@ -29,8 +29,13 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
       new QSpacerItem(INT_MIN, 100, QSizePolicy::Minimum, QSizePolicy::Minimum),
       0, 0, 1, 4);
 
-  select_filepath_ = new QPushButton("Select data");
+  QFont monospace_font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+  monospace_font.setBold(true);
+  select_filepath_ = new QPushButton("Select");
+  select_filepath_->setFont(monospace_font);
+  select_filepath_->setStyleSheet("color: rgb(200,200,200)");
   filepath_ = new QLineEdit("../tire_data_longitudinal.yaml");
+  filepath_->setFont(monospace_font);
   filepath_->setEnabled(false);
 
   layout->addWidget(select_filepath_, 1, 0, 1, 1);
@@ -38,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   // horizontal spacer
   layout->addItem(
-      new QSpacerItem(70, INT_MIN, QSizePolicy::Minimum, QSizePolicy::Minimum),
+      new QSpacerItem(30, INT_MIN, QSizePolicy::Minimum, QSizePolicy::Minimum),
       0, 4);
 
   layout->addItem(
@@ -66,18 +71,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
       7, 0, 1, 4);
 
   plot_ = new QwtPlot();
-  QwtText title("Magic Formula Visualization");
-  title.setColor(Qt::gray);
 
-  plot_->setTitle(title);
   plot_->setAxisScale(QwtPlot::xBottom, -1, 1);
   plot_->setAxisScale(QwtPlot::yLeft, -5000, 5000);
-  plot_->setAxisTitle(QwtPlot::xBottom, "Longitudinal Slip [-]");
-  plot_->setAxisTitle(QwtPlot::yLeft, "Longitudinal Force[N]");
+  QwtText x_label("Longitudinal Slip [-]");
+  monospace_font.setBold(true);
+  x_label.setFont(monospace_font);
+  x_label.setColor(Qt::gray);
+  plot_->setAxisTitle(QwtPlot::xBottom, x_label);
+  QwtText y_label("Longitudinal Force [N]");
+  y_label.setFont(monospace_font);
+  y_label.setColor(Qt::gray);
+  plot_->setAxisTitle(QwtPlot::yLeft, y_label);
 
   ref_curve_ = new QwtPlotCurve();
-  QwtSymbol *symbol = new QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::gray),
-                                    QPen(Qt::gray, 2), QSize(6, 6));
+  QwtSymbol *symbol = new QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::darkGray),
+                                    QPen(Qt::darkGray, 2), QSize(6, 6));
   ref_curve_->setSymbol(symbol);
   ref_curve_->setStyle(QwtPlotCurve::NoCurve);
   ref_curve_->attach(plot_);
@@ -87,7 +96,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   grid->attach(plot_);
 
   curve_ = new QwtPlotCurve();
-  curve_->setPen(Qt::red, 4);
+  curve_->setPen(QPen(Qt::green, 6));
   curve_->attach(plot_);
   updatePlot();
 
