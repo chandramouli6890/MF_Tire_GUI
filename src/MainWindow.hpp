@@ -5,7 +5,9 @@
 #include "qwt_plot.h"
 #include "qwt_plot_curve.h"
 #include "qwt_plot_grid.h"
+#include <QLineEdit>
 #include <QMainWindow>
+#include <QPushButton>
 
 struct Value {
   double min;
@@ -31,14 +33,18 @@ public:
 
 signals:
   void paramsChanged();
+  void refFileChanged();
 
 private:
   LabeledSlider *stiffness_slider_;
   LabeledSlider *shape_slider_;
   LabeledSlider *peak_slider_;
   LabeledSlider *curvature_slider_;
+  QPushButton *select_filepath_;
+  QLineEdit *filepath_;
   QwtPlot *plot_;
   QwtPlotCurve *curve_;
+  QwtPlotCurve *ref_curve_;
   Params *params_;
 
 private slots:
@@ -46,7 +52,9 @@ private slots:
   void shapeChanged(int val);
   void peakChanged(int val);
   void curvatureChanged(int val);
+  void selectFilepath();
   void updatePlot();
+  void loadReferenceData();
 };
 
 #endif

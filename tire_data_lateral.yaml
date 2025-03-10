@@ -1,0 +1,26 @@
+tire_data:
+  - vertical_force: 3000 # in newtons
+    lateral_slip_array: # in degrees
+      - -5.0
+      - -4.0 
+      - -3.0
+      - -2.0
+      - -1.0
+      - 0.0
+      - 1.0
+      - 2.0
+      - 3.0
+      - 4.0
+      - 5.0
+    lateral_force_array: # in newtons
+      - -4000.0
+      - -4000.0 
+      - -3000.0
+      - -2000.0
+      - -1000.0
+      - 0.0
+      - 1000.0
+      - 2000.0
+      - 3000.0
+      - 4000.0
+      - 4000.0

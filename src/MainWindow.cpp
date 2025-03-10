@@ -1,8 +1,11 @@
 #include "MainWindow.hpp"
 
-#include <QComboBox>
+#include <iostream>
+#include <yaml-cpp/yaml.h>
+
+#include "qwt_symbol.h"
+#include <QFileDialog>
 #include <QGridLayout>
-#include <QRadioButton>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
@@ -26,7 +29,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
       new QSpacerItem(INT_MIN, 100, QSizePolicy::Minimum, QSizePolicy::Minimum),
       0, 0, 1, 4);
 
-  layout->addWidget(new QComboBox(), 1, 0, 1, 4);
+  select_filepath_ = new QPushButton("Select data");
+  filepath_ = new QLineEdit("../tire_data_longitudinal.yaml");
+  filepath_->setEnabled(false);
+
+  layout->addWidget(select_filepath_, 1, 0, 1, 1);
+  layout->addWidget(filepath_, 1, 1, 1, 3);
 
   // horizontal spacer
   layout->addItem(
@@ -37,32 +45,25 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
       new QSpacerItem(INT_MIN, 0, QSizePolicy::Minimum, QSizePolicy::Minimum),
       2, 0, 1, 4);
 
-  layout->addWidget(new QRadioButton("Lateral"), 3, 1, 1, 2);
-  layout->addWidget(new QRadioButton("Longitudinal"), 3, 2, 1, 2);
-
-  layout->addItem(
-      new QSpacerItem(INT_MIN, 0, QSizePolicy::Minimum, QSizePolicy::Minimum),
-      4, 0, 1, 4);
-
   stiffness_slider_ = new LabeledSlider("Stiffness (B)", params_->stiffness.min,
                                         params_->stiffness.max, widget);
-  layout->addWidget(stiffness_slider_, 5, 0, 1, 4);
+  layout->addWidget(stiffness_slider_, 3, 0, 1, 4);
 
   shape_slider_ = new LabeledSlider("Shape (C)", params_->shape.min,
                                     params_->shape.max, widget);
-  layout->addWidget(shape_slider_, 6, 0, 1, 4);
+  layout->addWidget(shape_slider_, 4, 0, 1, 4);
 
   peak_slider_ = new LabeledSlider("Peak (D)", params_->peak.min,
                                    params_->peak.max, widget);
-  layout->addWidget(peak_slider_, 7, 0, 1, 4);
+  layout->addWidget(peak_slider_, 5, 0, 1, 4);
 
   curvature_slider_ = new LabeledSlider("Curvature (E)", params_->curvature.min,
                                         params_->curvature.max, widget);
-  layout->addWidget(curvature_slider_, 8, 0, 1, 4);
+  layout->addWidget(curvature_slider_, 6, 0, 1, 4);
 
   layout->addItem(
       new QSpacerItem(INT_MIN, 0, QSizePolicy::Minimum, QSizePolicy::Minimum),
-      9, 0, 1, 4);
+      7, 0, 1, 4);
 
   plot_ = new QwtPlot();
   QwtText title("Magic Formula Visualization");
@@ -71,18 +72,26 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   plot_->setTitle(title);
   plot_->setAxisScale(QwtPlot::xBottom, -1, 1);
   plot_->setAxisScale(QwtPlot::yLeft, -5000, 5000);
-  plot_->setAxisTitle(QwtPlot::xBottom, "Longitudinal Force [N]");
-  plot_->setAxisTitle(QwtPlot::yLeft, "Longitudinal Slip [-]");
+  plot_->setAxisTitle(QwtPlot::xBottom, "Longitudinal Slip [-]");
+  plot_->setAxisTitle(QwtPlot::yLeft, "Longitudinal Force[N]");
+
+  ref_curve_ = new QwtPlotCurve();
+  QwtSymbol *symbol = new QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::gray),
+                                    QPen(Qt::gray, 2), QSize(6, 6));
+  ref_curve_->setSymbol(symbol);
+  ref_curve_->setStyle(QwtPlotCurve::NoCurve);
+  ref_curve_->attach(plot_);
+  loadReferenceData();
 
   QwtPlotGrid *grid = new QwtPlotGrid();
   grid->attach(plot_);
 
   curve_ = new QwtPlotCurve();
-  // curve_->setPen(Qt::green, 4);
   curve_->setPen(Qt::red, 4);
   curve_->attach(plot_);
+  updatePlot();
 
-  layout->addWidget(plot_, 0, 5, 10, 4);
+  layout->addWidget(plot_, 0, 5, 8, 4);
 
   widget->setLayout(layout);
   connect(stiffness_slider_, &LabeledSlider::valueChanged, this,
@@ -93,9 +102,22 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
           &MainWindow::peakChanged);
   connect(curvature_slider_, &LabeledSlider::valueChanged, this,
           &MainWindow::curvatureChanged);
+  connect(select_filepath_, &QPushButton::clicked, this,
+          &MainWindow::selectFilepath);
   connect(this, &MainWindow::paramsChanged, this, &MainWindow::updatePlot);
+  connect(this, &MainWindow::refFileChanged, this,
+          &MainWindow::loadReferenceData);
+}
 
-  updatePlot();
+void MainWindow::selectFilepath() {
+  QString filepath = QFileDialog::getOpenFileName(this, "Select a File", "",
+                                                  "YAML Files (*.yaml)");
+
+  if (!filepath.isEmpty()) {
+    filepath_->setText(filepath);
+    qDebug() << filepath_->text();
+    emit refFileChanged();
+  }
 }
 
 void MainWindow::stiffnessChanged(int val) {
@@ -130,7 +152,7 @@ void MainWindow::updatePlot() {
   const int points = 1000;
   const double slip_min = params_->longitudinal_slip.min;
   const double slip_max = params_->longitudinal_slip.max;
-  QVector<double> xData(points), yData(points);
+  QVector<double> x_data(points), y_data(points);
   const double B = params_->stiffness.val;
   const double C = params_->shape.val;
   const double D = params_->peak.val;
@@ -139,14 +161,31 @@ void MainWindow::updatePlot() {
 
   for (int i = 0; i < points; i++) {
     const double slip = slip_min + (slip_max - slip_min) * (i / (double)points);
-    xData[i] = slip;
+    x_data[i] = slip;
     const double B_slip = B * slip;
     const double tmp = E * (B_slip - std::atan(B_slip));
     const double tmp2 = std::atan(B_slip - tmp);
     const double tmp3 = std::sin(C * tmp2);
-    yData[i] = Fz * D * std::sin(tmp3);
+    y_data[i] = Fz * D * std::sin(tmp3);
   }
 
-  curve_->setSamples(xData, yData);
+  curve_->setSamples(x_data, y_data);
+  plot_->replot();
+}
+
+void MainWindow::loadReferenceData() {
+  QVector<double> slip;
+  QVector<double> force;
+  QString filename = filepath_->text();
+  YAML::Node yaml_data = YAML::LoadFile(filename.toStdString());
+
+  auto tire_data = yaml_data["tire_data"][0];
+  double vertical_force = tire_data["vertical_force"].as<double>();
+  slip = QVector<double>::fromStdVector(
+      tire_data["longitudinal_slip_array"].as<std::vector<double>>());
+  force = QVector<double>::fromStdVector(
+      tire_data["longitudinal_force_array"].as<std::vector<double>>());
+
+  ref_curve_->setSamples(slip, force);
   plot_->replot();
 }
