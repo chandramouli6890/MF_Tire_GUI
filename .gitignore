@@ -1,4 +1,5 @@
-# Ignore build directories
+# Ignore build and cache directories
+.cache/
 /build/
 /CMakeFiles/
 /CMakeCache.txt
