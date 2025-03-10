@@ -4,8 +4,6 @@
 #include <QGridLayout>
 #include <QRadioButton>
 
-#include <iostream>
-
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   // clang-format off
