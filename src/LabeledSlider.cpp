@@ -24,6 +24,7 @@ LabeledSlider::LabeledSlider(const QString &text, const double slider_min,
         background: rgb(180,100,0);
         height: 9px;
         border-radius: 3px;
+        border: 2px solid rgb(40,40,40);
     }
     QSlider::handle:horizontal {
         background: gray;

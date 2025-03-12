@@ -2,6 +2,8 @@
 
 #include <yaml-cpp/yaml.h>
 
+#include "qwt_plot_grid.h"
+#include "qwt_plot_marker.h"
 #include "qwt_symbol.h"
 #include <QFileDialog>
 #include <QGridLayout>
@@ -30,11 +32,10 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
       0, 0, 1, 4);
 
   QFont monospace_font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
-  monospace_font.setBold(true);
   select_filepath_ = new QPushButton("Select");
   select_filepath_->setFont(monospace_font);
   select_filepath_->setStyleSheet("color: rgb(200,200,200)");
-  filepath_ = new QLineEdit("../tire_data_longitudinal.yaml");
+  filepath_ = new QLineEdit(DEFAULT_FILENAME);
   filepath_->setFont(monospace_font);
   filepath_->setEnabled(false);
 
@@ -99,6 +100,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   curve_->setPen(QPen(Qt::green, 6));
   curve_->attach(plot_);
   updatePlot();
+  updateErrorMetric();
 
   layout->addWidget(plot_, 0, 5, 8, 4);
 
@@ -116,6 +118,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   connect(this, &MainWindow::paramsChanged, this, &MainWindow::updatePlot);
   connect(this, &MainWindow::refFileChanged, this,
           &MainWindow::loadReferenceData);
+  connect(this, &MainWindow::plotChanged, this, &MainWindow::updateErrorMetric);
 }
 
 void MainWindow::selectFilepath() {
@@ -158,43 +161,78 @@ void MainWindow::curvatureChanged(int val) {
 }
 
 void MainWindow::updatePlot() {
-  const int points = 1000;
+  const int array_size = params_->array_size;
   const double slip_min = params_->longitudinal_slip.min;
   const double slip_max = params_->longitudinal_slip.max;
-  QVector<double> x_data(points), y_data(points);
   const double B = params_->stiffness.val;
   const double C = params_->shape.val;
   const double D = params_->peak.val;
   const double E = params_->curvature.val;
   const double Fz = params_->vertical_force;
 
-  for (int i = 0; i < points; i++) {
-    const double slip = slip_min + (slip_max - slip_min) * (i / (double)points);
-    x_data[i] = slip;
+  QVector<double> x(array_size);
+  QVector<double> y(array_size);
+
+  for (int i = 0; i < array_size; i++) {
+    const double slip =
+        slip_min + (slip_max - slip_min) * (i / (double)array_size);
+    x[i] = slip;
     const double B_slip = B * slip;
     const double tmp = E * (B_slip - std::atan(B_slip));
     const double tmp2 = std::atan(B_slip - tmp);
     const double tmp3 = std::sin(C * tmp2);
-    y_data[i] = Fz * D * std::sin(tmp3);
+    y[i] = Fz * D * std::sin(tmp3);
   }
 
-  curve_->setSamples(x_data, y_data);
+  curve_->setSamples(x, y);
+  model_data_.x = x;
+  model_data_.y = y;
   plot_->replot();
+  emit plotChanged();
 }
 
 void MainWindow::loadReferenceData() {
-  QVector<double> slip;
-  QVector<double> force;
   QString filename = filepath_->text();
   YAML::Node yaml_data = YAML::LoadFile(filename.toStdString());
 
   auto tire_data = yaml_data["tire_data"][0];
   double vertical_force = tire_data["vertical_force"].as<double>();
-  slip = QVector<double>::fromStdVector(
+  ref_data_.x = QVector<double>::fromStdVector(
       tire_data["longitudinal_slip_array"].as<std::vector<double>>());
-  force = QVector<double>::fromStdVector(
+  ref_data_.y = QVector<double>::fromStdVector(
       tire_data["longitudinal_force_array"].as<std::vector<double>>());
 
-  ref_curve_->setSamples(slip, force);
+  ref_curve_->setSamples(ref_data_.x, ref_data_.y);
   plot_->replot();
+
+  params_->array_size = ref_data_.x.size();
+  emit paramsChanged();
+  emit plotChanged();
+}
+
+void MainWindow::updateErrorMetric() {
+  // 1. Compute the mean of ref_y
+  double mean_ref =
+      std::accumulate(ref_data_.y.begin(), ref_data_.y.end(), 0.0) /
+      params_->array_size;
+
+  // 2. Compute the sum of squared differences between true and predicted values
+  double sum_squared_error = 0.0;
+  double sum_squared_deviation = 0.0;
+
+  for (size_t i = 0; i < params_->array_size; ++i) {
+    double error = ref_data_.y[i] - model_data_.y[i];
+    double deviation = ref_data_.y[i] - mean_ref;
+    sum_squared_error += error * error;
+    sum_squared_deviation += deviation * deviation;
+  }
+
+  // 3. Compute NMSE
+  const double error = sum_squared_error / sum_squared_deviation;
+
+  QwtText text(QString("Error (NMSE): %1").arg(error, 0, 'f', 4));
+  QFont monospace_font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+  monospace_font.setBold(false);
+  text.setFont(monospace_font);
+  plot_->setTitle(text);
 }

@@ -2,27 +2,16 @@
 #define MAINWINDOW_H
 
 #include "LabeledSlider.hpp"
+#include "Parameters.hpp"
 #include "qwt_plot.h"
 #include "qwt_plot_curve.h"
-#include "qwt_plot_grid.h"
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QPushButton>
 
-struct Value {
-  double min;
-  double max;
-  double val;
-};
-
-struct Params {
-  Value stiffness;
-  Value shape;
-  Value peak;
-  Value curvature;
-  Value longitudinal_slip;
-  double vertical_force{3000.0};
-  bool is_lateral{false};
+struct PlotData {
+  QVector<double> x;
+  QVector<double> y;
 };
 
 class MainWindow : public QMainWindow {
@@ -34,6 +23,7 @@ public:
 signals:
   void paramsChanged();
   void refFileChanged();
+  void plotChanged();
 
 private:
   LabeledSlider *stiffness_slider_;
@@ -46,6 +36,8 @@ private:
   QwtPlotCurve *curve_;
   QwtPlotCurve *ref_curve_;
   Params *params_;
+  PlotData ref_data_;
+  PlotData model_data_;
 
 private slots:
   void stiffnessChanged(int val);
@@ -55,6 +47,7 @@ private slots:
   void selectFilepath();
   void updatePlot();
   void loadReferenceData();
+  void updateErrorMetric();
 };
 
 #endif
