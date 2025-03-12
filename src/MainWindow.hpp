@@ -48,6 +48,7 @@ private slots:
   void updatePlot();
   void loadReferenceData();
   void updateErrorMetric();
+  void updateAxisLabels();
 };
 
 #endif

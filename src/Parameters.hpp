@@ -12,8 +12,8 @@ struct Params {
   Value shape;
   Value peak;
   Value curvature;
-  Value longitudinal_slip;
-  double vertical_force{3000.0};
+  Value slip;
+  double vertical_force{-1.0};
   bool is_lateral{false};
-  int array_size{100};
+  int array_size{-1};
 };

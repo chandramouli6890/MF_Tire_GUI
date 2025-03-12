@@ -22,13 +22,13 @@ LabeledSlider::LabeledSlider(const QString &text, const double slider_min,
   slider_->setStyleSheet(R"(
   QSlider::groove:horizontal {
         background: rgb(180,100,0);
-        height: 9px;
+        height: 10px;
         border-radius: 3px;
         border: 2px solid rgb(40,40,40);
     }
     QSlider::handle:horizontal {
         background: gray;
-        border: 4px solid rgb(40,40,40);
+        border: 2px solid rgb(40,40,40);
         width: 26px;
         height: 26px;
         border-radius: 4px;

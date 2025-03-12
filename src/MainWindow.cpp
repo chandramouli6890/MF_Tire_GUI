@@ -1,22 +1,19 @@
 #include "MainWindow.hpp"
 
-#include <yaml-cpp/yaml.h>
-
 #include "qwt_plot_grid.h"
 #include "qwt_plot_marker.h"
 #include "qwt_symbol.h"
 #include <QFileDialog>
 #include <QGridLayout>
+#include <yaml-cpp/yaml.h>
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   // clang-format off
-  params_ = new Params{{  4.0, 12.0,  8.0}, // stiffness
-                       {  1.0,  2.0,  0.5}, // shape
-                       {  0.1,  1.9,  1.1}, // peak
-                       {-10.0,  1.0, -4.5}, // curvature
-                       { -1.0,  1.0},       // longitudinal_slip
-                       3000.0};             // vertical_force
+  params_ = new Params{{  4.0, 12.0,  8.0},  // stiffness
+                       {  1.0,  2.0,  0.5},  // shape
+                       {  0.1,  1.9,  1.1},  // peak
+                       {-10.0,  1.0, -4.5}}; // curvature
   // clang-format on
 
   setWindowTitle("Magic-Formula Tire Visualizer");
@@ -75,15 +72,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
 
   plot_->setAxisScale(QwtPlot::xBottom, -1, 1);
   plot_->setAxisScale(QwtPlot::yLeft, -5000, 5000);
-  QwtText x_label("Longitudinal Slip [-]");
-  monospace_font.setBold(true);
-  x_label.setFont(monospace_font);
-  x_label.setColor(Qt::gray);
-  plot_->setAxisTitle(QwtPlot::xBottom, x_label);
-  QwtText y_label("Longitudinal Force [N]");
-  y_label.setFont(monospace_font);
-  y_label.setColor(Qt::gray);
-  plot_->setAxisTitle(QwtPlot::yLeft, y_label);
 
   ref_curve_ = new QwtPlotCurve();
   QwtSymbol *symbol = new QwtSymbol(QwtSymbol::Ellipse, QBrush(Qt::darkGray),
@@ -101,6 +89,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   curve_->attach(plot_);
   updatePlot();
   updateErrorMetric();
+  updateAxisLabels();
 
   layout->addWidget(plot_, 0, 5, 8, 4);
 
@@ -119,6 +108,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   connect(this, &MainWindow::refFileChanged, this,
           &MainWindow::loadReferenceData);
   connect(this, &MainWindow::plotChanged, this, &MainWindow::updateErrorMetric);
+  connect(this, &MainWindow::plotChanged, this, &MainWindow::updateAxisLabels);
 }
 
 void MainWindow::selectFilepath() {
@@ -162,8 +152,8 @@ void MainWindow::curvatureChanged(int val) {
 
 void MainWindow::updatePlot() {
   const int array_size = params_->array_size;
-  const double slip_min = params_->longitudinal_slip.min;
-  const double slip_max = params_->longitudinal_slip.max;
+  const double slip_min = params_->slip.min;
+  const double slip_max = params_->slip.max;
   const double B = params_->stiffness.val;
   const double C = params_->shape.val;
   const double D = params_->peak.val;
@@ -196,16 +186,19 @@ void MainWindow::loadReferenceData() {
   YAML::Node yaml_data = YAML::LoadFile(filename.toStdString());
 
   auto tire_data = yaml_data["tire_data"][0];
-  double vertical_force = tire_data["vertical_force"].as<double>();
   ref_data_.x = QVector<double>::fromStdVector(
-      tire_data["longitudinal_slip_array"].as<std::vector<double>>());
+      tire_data["slip_array"].as<std::vector<double>>());
   ref_data_.y = QVector<double>::fromStdVector(
-      tire_data["longitudinal_force_array"].as<std::vector<double>>());
+      tire_data["force_array"].as<std::vector<double>>());
 
   ref_curve_->setSamples(ref_data_.x, ref_data_.y);
   plot_->replot();
 
   params_->array_size = ref_data_.x.size();
+  params_->vertical_force = tire_data["vertical_force"].as<double>();
+  params_->is_lateral = tire_data["is_lateral"].as<bool>();
+  params_->slip.min = *std::min_element(ref_data_.x.begin(), ref_data_.x.end());
+  params_->slip.max = *std::max_element(ref_data_.x.begin(), ref_data_.x.end());
   emit paramsChanged();
   emit plotChanged();
 }
@@ -235,4 +228,23 @@ void MainWindow::updateErrorMetric() {
   monospace_font.setBold(false);
   text.setFont(monospace_font);
   plot_->setTitle(text);
+}
+
+void MainWindow::updateAxisLabels() {
+  std::string label_pre_fix{""};
+  if (params_->is_lateral) {
+    label_pre_fix = "Lateral ";
+  } else {
+    label_pre_fix = "Longitudinal ";
+  }
+  QFont monospace_font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+  QwtText x_label = QString::fromStdString(label_pre_fix + "Slip");
+  monospace_font.setBold(true);
+  x_label.setFont(monospace_font);
+  x_label.setColor(Qt::gray);
+  plot_->setAxisTitle(QwtPlot::xBottom, x_label);
+  QwtText y_label = QString::fromStdString(label_pre_fix + "Force [N]");
+  y_label.setFont(monospace_font);
+  y_label.setColor(Qt::gray);
+  plot_->setAxisTitle(QwtPlot::yLeft, y_label);
 }
