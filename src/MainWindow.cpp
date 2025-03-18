@@ -7,7 +7,7 @@
 #include <QGridLayout>
 #include <yaml-cpp/yaml.h>
 
-MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
+MainWindow::MainWindow(QWidget *parent, const QString& filepath) : QMainWindow(parent) {
 
   // clang-format off
   params_ = new Params{{  4.0, 12.0,  8.0},  // stiffness
@@ -32,7 +32,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) {
   select_filepath_ = new QPushButton("Select");
   select_filepath_->setFont(monospace_font);
   select_filepath_->setStyleSheet("color: rgb(200,200,200)");
-  filepath_ = new QLineEdit(DEFAULT_FILENAME);
+  filepath_ = new QLineEdit(filepath);
   filepath_->setFont(monospace_font);
   filepath_->setEnabled(false);
 

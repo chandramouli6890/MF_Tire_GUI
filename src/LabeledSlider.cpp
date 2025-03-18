@@ -11,12 +11,14 @@ LabeledSlider::LabeledSlider(const QString &text, const double slider_min,
   hlayout_->setContentsMargins(0, 0, 0, 0);
 
   label_ = new RotatedLabel(text);
+  label_->setObjectName(text + "_label");
   QFont monospace_font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
   label_->setFont(monospace_font);
   label_->setFixedWidth(300);
   label_->setStyleSheet(FONT_COLOR);
 
   slider_ = new QSlider(Qt::Horizontal);
+  slider_->setObjectName(text + "_slider");
   slider_->setValue(50);
   slider_->setMaximum(100);
   slider_->setStyleSheet(R"(
@@ -37,6 +39,7 @@ LabeledSlider::LabeledSlider(const QString &text, const double slider_min,
 )");
 
   slider_display_ = new QLabel();
+  slider_display_->setObjectName(text + "_display_label");
   slider_display_->setFont(monospace_font);
   slider_display_->setFixedWidth(90);
   slider_display_->setStyleSheet(FONT_COLOR);

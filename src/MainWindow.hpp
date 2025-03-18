@@ -17,7 +17,7 @@ struct PlotData {
 class MainWindow : public QMainWindow {
   Q_OBJECT
 public:
-  MainWindow(QWidget *parent = nullptr);
+  MainWindow(QWidget *parent, const QString& filepath);
   ~MainWindow() {}
 
 signals:
