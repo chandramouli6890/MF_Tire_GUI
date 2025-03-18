@@ -5,9 +5,9 @@
 #include "qwt_symbol.h"
 #include <QFileDialog>
 #include <QGridLayout>
-#include <yaml-cpp/yaml.h>
 
-MainWindow::MainWindow(QWidget *parent, const QString& filepath) : QMainWindow(parent) {
+MainWindow::MainWindow(QWidget *parent, const QString &filepath)
+    : QMainWindow(parent) {
 
   // clang-format off
   params_ = new Params{{  4.0, 12.0,  8.0},  // stiffness
@@ -79,7 +79,7 @@ MainWindow::MainWindow(QWidget *parent, const QString& filepath) : QMainWindow(p
   ref_curve_->setSymbol(symbol);
   ref_curve_->setStyle(QwtPlotCurve::NoCurve);
   ref_curve_->attach(plot_);
-  loadReferenceData();
+  loadReferenceData(YAML::LoadFile(filepath.toStdString()));
 
   QwtPlotGrid *grid = new QwtPlotGrid();
   grid->attach(plot_);
@@ -102,8 +102,7 @@ MainWindow::MainWindow(QWidget *parent, const QString& filepath) : QMainWindow(p
           &MainWindow::peakChanged);
   connect(curvature_slider_, &LabeledSlider::valueChanged, this,
           &MainWindow::curvatureChanged);
-  connect(select_filepath_, &QPushButton::clicked, this,
-          &MainWindow::selectFilepath);
+  connect(select_filepath_, &QPushButton::clicked, this, &MainWindow::loadFile);
   connect(this, &MainWindow::paramsChanged, this, &MainWindow::updatePlot);
   connect(this, &MainWindow::refFileChanged, this,
           &MainWindow::loadReferenceData);
@@ -111,14 +110,14 @@ MainWindow::MainWindow(QWidget *parent, const QString& filepath) : QMainWindow(p
   connect(this, &MainWindow::plotChanged, this, &MainWindow::updateAxisLabels);
 }
 
-void MainWindow::selectFilepath() {
+void MainWindow::loadFile() {
   QString filepath = QFileDialog::getOpenFileName(this, "Select a File", "",
                                                   "YAML Files (*.yaml)");
 
   if (!filepath.isEmpty()) {
     filepath_->setText(filepath);
-    qDebug() << filepath_->text();
-    emit refFileChanged();
+    YAML::Node data = YAML::LoadFile(filepath.toStdString());
+    emit refFileChanged(data);
   }
 }
 
@@ -181,11 +180,8 @@ void MainWindow::updatePlot() {
   emit plotChanged();
 }
 
-void MainWindow::loadReferenceData() {
-  QString filename = filepath_->text();
-  YAML::Node yaml_data = YAML::LoadFile(filename.toStdString());
-
-  auto tire_data = yaml_data["tire_data"][0];
+void MainWindow::loadReferenceData(YAML::Node data) {
+  auto tire_data = data["tire_data"][0];
   ref_data_.x = QVector<double>::fromStdVector(
       tire_data["slip_array"].as<std::vector<double>>());
   ref_data_.y = QVector<double>::fromStdVector(

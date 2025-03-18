@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QMainWindow>
 #include <QPushButton>
+#include <yaml-cpp/yaml.h>
 
 struct PlotData {
   QVector<double> x;
@@ -17,12 +18,12 @@ struct PlotData {
 class MainWindow : public QMainWindow {
   Q_OBJECT
 public:
-  MainWindow(QWidget *parent, const QString& filepath);
+  MainWindow(QWidget *parent, const QString &filepath);
   ~MainWindow() {}
 
 signals:
   void paramsChanged();
-  void refFileChanged();
+  void refFileChanged(YAML::Node data);
   void plotChanged();
 
 private:
@@ -44,9 +45,9 @@ private slots:
   void shapeChanged(int val);
   void peakChanged(int val);
   void curvatureChanged(int val);
-  void selectFilepath();
+  void loadFile();
   void updatePlot();
-  void loadReferenceData();
+  void loadReferenceData(YAML::Node data);
   void updateErrorMetric();
   void updateAxisLabels();
 };
