@@ -10,7 +10,7 @@ LabeledSlider::LabeledSlider(const QString &text, const double slider_min,
   hlayout_->setSpacing(5);
   hlayout_->setContentsMargins(0, 0, 0, 0);
 
-  label_ = new RotatedLabel(text);
+  label_ = new QLabel(text);
   label_->setObjectName(text + "_label");
   QFont monospace_font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
   label_->setFont(monospace_font);

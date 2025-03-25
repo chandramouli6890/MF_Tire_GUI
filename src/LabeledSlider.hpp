@@ -1,7 +1,6 @@
 #ifndef LABELEDSLIDER_H
 #define LABELEDSLIDER_H
 
-#include "RotatedLabel.hpp"
 #include <QFont>
 #include <QFontDatabase>
 #include <QHBoxLayout>
@@ -18,7 +17,7 @@ public:
 private:
   QVBoxLayout *main_layout_;
   QHBoxLayout *hlayout_;
-  RotatedLabel *label_;
+  QLabel *label_;
   QSlider *slider_;
   QLabel *slider_display_;
   double min_{};
