@@ -89,7 +89,6 @@ MainWindow::MainWindow(QWidget *parent, const QString &filepath)
   curve_->attach(plot_);
   updatePlot();
   updateErrorMetric();
-  updateAxisLabels();
 
   layout->addWidget(plot_, 0, 5, 8, 4);
 
@@ -107,7 +106,6 @@ MainWindow::MainWindow(QWidget *parent, const QString &filepath)
   connect(this, &MainWindow::refFileChanged, this,
           &MainWindow::loadReferenceData);
   connect(this, &MainWindow::plotChanged, this, &MainWindow::updateErrorMetric);
-  connect(this, &MainWindow::plotChanged, this, &MainWindow::updateAxisLabels);
 }
 
 void MainWindow::loadFile() {
@@ -190,13 +188,14 @@ void MainWindow::loadReferenceData(YAML::Node data) {
   ref_curve_->setSamples(ref_data_.x, ref_data_.y);
   plot_->replot();
 
+  params_->is_lateral = tire_data["is_lateral"].as<bool>();
+  updateAxisLabels();
+
   params_->array_size = ref_data_.x.size();
   params_->vertical_force = tire_data["vertical_force"].as<double>();
-  params_->is_lateral = tire_data["is_lateral"].as<bool>();
   params_->slip.min = *std::min_element(ref_data_.x.begin(), ref_data_.x.end());
   params_->slip.max = *std::max_element(ref_data_.x.begin(), ref_data_.x.end());
   emit paramsChanged();
-  emit plotChanged();
 }
 
 void MainWindow::updateErrorMetric() {

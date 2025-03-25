@@ -1,12 +1,24 @@
 #include "src/MainWindow.hpp"
 #include <QtTest/QtTest>
 
+const std::string yaml_test_data = R"(
+tire_data:
+- force_array:
+   - 1.0
+  is_lateral: true
+  slip_array:
+   - 1.0
+  vertical_force: 400.0
+)";
+
 class TestMainWindow : public QObject {
   Q_OBJECT
 
 private slots:
   void testSliderUpdatesLabel_data();
   void testSliderUpdatesLabel();
+  void testLoadReferenceDataEmitsParamsChanged();
+  void testLoadReferenceDataChangesXYLabels();
 };
 
 void TestMainWindow::testSliderUpdatesLabel_data() {
@@ -34,6 +46,51 @@ void TestMainWindow::testSliderUpdatesLabel() {
   slider->setValue(100);
 
   QVERIFY(text_init != label->text());
+}
+
+void TestMainWindow::testLoadReferenceDataEmitsParamsChanged() {
+  MainWindow window(nullptr, "../../tire_data_longitudinal.yaml");
+  window.show();
+
+  QSignalSpy spy(&window, &MainWindow::paramsChanged);
+  QVERIFY(spy.isValid());
+
+  YAML::Node node = YAML::Load(yaml_test_data);
+
+  // Invoke private slot
+  bool success =
+      QMetaObject::invokeMethod(&window, "loadReferenceData",
+                                Qt::DirectConnection, Q_ARG(YAML::Node, node));
+  QVERIFY(success);
+
+  // Verify if the signal was emitted
+  QVERIFY(spy.count() > 0);
+}
+
+void TestMainWindow::testLoadReferenceDataChangesXYLabels() {
+  MainWindow window(nullptr, "../../tire_data_longitudinal.yaml");
+  window.show();
+
+  YAML::Node node = YAML::Load(yaml_test_data);
+
+  QwtPlot *plot = window.findChild<QwtPlot *>();
+  QVERIFY(plot);
+
+  // Get initial axis labels
+  QString initial_x_label = plot->axisTitle(QwtPlot::xBottom).text();
+  QString initial_y_label = plot->axisTitle(QwtPlot::yLeft).text();
+
+  // Invoke private slot
+  bool success =
+      QMetaObject::invokeMethod(&window, "loadReferenceData",
+                                Qt::DirectConnection, Q_ARG(YAML::Node, node));
+  QVERIFY(success);
+
+  QString final_x_label = plot->axisTitle(QwtPlot::xBottom).text();
+  QString final_y_label = plot->axisTitle(QwtPlot::yLeft).text();
+
+  QVERIFY(initial_x_label != final_x_label);
+  QVERIFY(initial_y_label != final_y_label);
 }
 
 QTEST_MAIN(TestMainWindow)
