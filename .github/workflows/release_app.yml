@@ -37,8 +37,7 @@ jobs:
           TAG_NAME="v$(date +'%Y%m%d%H%M%S')"  # Generate a unique tag based on the date/time
           git tag $TAG_NAME
           git push origin $TAG_NAME
-
-
+          echo "::set-output name=tag_name::$TAG_NAME"
 
       - name: Create Release
         if: success()
