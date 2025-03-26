@@ -16,7 +16,9 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 find_package(Qt5 COMPONENTS Core Gui Widgets Test REQUIRED)
-find_package(Qwt REQUIRED)
+# find_package(Qwt REQUIRED)
+include_directories("/usr/include/qwt")
+link_directories("/usr/lib")
 
 add_subdirectory(src)
 add_subdirectory(test)
