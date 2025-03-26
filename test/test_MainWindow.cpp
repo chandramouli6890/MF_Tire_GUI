@@ -38,6 +38,9 @@ void TestMainWindow::testSliderUpdatesLabel() {
   QSlider *slider = window.findChild<QSlider *>(slider_name + "_slider");
   QVERIFY(slider);
 
+  QSignalSpy spy(&window, &MainWindow::paramsChanged);
+  QVERIFY(spy.isValid());
+
   QLabel *label = window.findChild<QLabel *>(slider_name + "_display_label");
   QVERIFY(label);
   auto text_init = label->text();
@@ -46,6 +49,8 @@ void TestMainWindow::testSliderUpdatesLabel() {
   slider->setValue(100);
 
   QVERIFY(text_init != label->text());
+
+  QVERIFY(spy.count() > 0);
 }
 
 void TestMainWindow::testLoadReferenceDataEmitsParamsChanged() {
@@ -57,7 +62,6 @@ void TestMainWindow::testLoadReferenceDataEmitsParamsChanged() {
 
   YAML::Node node = YAML::Load(yaml_test_data);
 
-  // Invoke private slot
   bool success =
       QMetaObject::invokeMethod(&window, "loadReferenceData",
                                 Qt::DirectConnection, Q_ARG(YAML::Node, node));
@@ -76,11 +80,9 @@ void TestMainWindow::testLoadReferenceDataChangesXYLabels() {
   QwtPlot *plot = window.findChild<QwtPlot *>();
   QVERIFY(plot);
 
-  // Get initial axis labels
   QString initial_x_label = plot->axisTitle(QwtPlot::xBottom).text();
   QString initial_y_label = plot->axisTitle(QwtPlot::yLeft).text();
 
-  // Invoke private slot
   bool success =
       QMetaObject::invokeMethod(&window, "loadReferenceData",
                                 Qt::DirectConnection, Q_ARG(YAML::Node, node));

@@ -222,6 +222,7 @@ void MainWindow::updateErrorMetric() {
   QFont monospace_font = QFontDatabase::systemFont(QFontDatabase::FixedFont);
   monospace_font.setBold(false);
   text.setFont(monospace_font);
+  text.setColor(Qt::gray);
   plot_->setTitle(text);
 }
 
