@@ -12,7 +12,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y cmake make g++ qtbase5-dev libqwt-qt5-dev
+        run: |
+          sudo apt-get update 
+          sudo apt-get install -y cmake make g++ qtbase5-dev libqwt-qt5-dev
 
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
