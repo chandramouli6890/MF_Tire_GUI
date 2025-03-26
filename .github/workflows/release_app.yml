@@ -43,7 +43,7 @@ jobs:
         if: success()
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ steps.create_tag.outputs.tag_name }}
+          tag_name: latest
           files: ./build/src/main # Change this to the correct executable path
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
