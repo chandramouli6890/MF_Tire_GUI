@@ -15,7 +15,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake make g++ qtbase5-dev libqwt-qt5-dev
-          echo "Qwt installed to: $(dpkg -L libqwt-qt5-dev | grep cmake)"
+          echo "Qwt installed to: $(dpkg -L libqwt-qt5-dev)"
 
       - name: Configure CMake
         env:
