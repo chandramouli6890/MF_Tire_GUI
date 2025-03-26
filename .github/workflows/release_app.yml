@@ -1,0 +1,41 @@
+name: Build and Release Qt Application
+
+on:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies (CMake, Make, Qt, Qwt)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake make g++ qt5-qmake qtbase5-dev qtchooser qtbase5-dev-tools libqt5gui5 libqt5core5a libqt5widgets5 libqwt-qt5-dev
+
+      - name: Set Qt to use offscreen plugin
+        run: |
+          echo "QT_QPA_PLATFORM=offscreen" >> $GITHUB_ENV
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build with Make
+        run: make -C build
+
+      - name: Run CTest
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Create Release
+        if: success()
+        uses: softprops/action-gh-release@v1
+        with:
+          files: ./build/src/main # Change this to the correct executable path
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
