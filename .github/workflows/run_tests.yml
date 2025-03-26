@@ -15,6 +15,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y cmake make g++ qtbase5-dev libqwt-qt5-dev
+          ls /usr/lib | grep qwt
 
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
