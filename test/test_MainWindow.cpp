@@ -15,13 +15,13 @@ class TestMainWindow : public QObject {
   Q_OBJECT
 
 private slots:
-  void testSliderUpdatesLabel_data();
-  void testSliderUpdatesLabel();
+  void testSliderChangeTriggersReplot_data();
+  void testSliderChangeTriggersReplot();
   void testLoadReferenceDataEmitsParamsChanged();
   void testLoadReferenceDataChangesXYLabels();
 };
 
-void TestMainWindow::testSliderUpdatesLabel_data() {
+void TestMainWindow::testSliderChangeTriggersReplot_data() {
   QTest::addColumn<QString>("slider_name");
   QTest::newRow("Stiffness Slider") << "Stiffness (B)";
   QTest::newRow("Shape Slider") << "Shape (C)";
@@ -29,7 +29,7 @@ void TestMainWindow::testSliderUpdatesLabel_data() {
   QTest::newRow("Curvature Slider") << "Curvature (E)";
 }
 
-void TestMainWindow::testSliderUpdatesLabel() {
+void TestMainWindow::testSliderChangeTriggersReplot() {
   QFETCH(QString, slider_name);
 
   MainWindow window(nullptr, "../../tire_data_longitudinal.yaml");
@@ -37,20 +37,20 @@ void TestMainWindow::testSliderUpdatesLabel() {
 
   QSlider *slider = window.findChild<QSlider *>(slider_name + "_slider");
   QVERIFY(slider);
+  QwtPlot *plot = window.findChild<QwtPlot *>();
+  QVERIFY(plot);
+  auto title_init = plot->title().text();
 
-  QSignalSpy spy(&window, &MainWindow::paramsChanged);
-  QVERIFY(spy.isValid());
-
-  QLabel *label = window.findChild<QLabel *>(slider_name + "_display_label");
-  QVERIFY(label);
-  auto text_init = label->text();
+  QSignalSpy params_changed_spy(&window, &MainWindow::paramsChanged);
+  QVERIFY(params_changed_spy.isValid());
 
   // simulate a slider value change
   slider->setValue(100);
 
-  QVERIFY(text_init != label->text());
-
-  QVERIFY(spy.count() > 0);
+  QVERIFY(params_changed_spy.count() > 0);
+  // Check whether title, which contains error magnitude, has changed.
+  // This indirectly verifies if a replot was triggered
+  QVERIFY(title_init != plot->title().text());
 }
 
 void TestMainWindow::testLoadReferenceDataEmitsParamsChanged() {
