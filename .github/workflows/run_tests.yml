@@ -11,10 +11,16 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install dependencies (CMake, Make, Qt, Qwt)
         run: |
-          sudo apt-get update 
+          sudo apt-get update
           sudo apt-get install -y cmake make g++ qtbase5-dev libqwt-qt5-dev
+          echo "Qwt installed to: $(dpkg -L libqwt-qt5-dev | grep cmake)"
+
+      - name: Configure CMake
+        env:
+          Qwt_DIR: "/usr/lib/x86_64-linux-gnu/cmake/Qwt" # Ensure correct path
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DQwt_DIR=$Qwt_DIR
 
       - name: Configure CMake
         run: cmake -B build -DCMAKE_BUILD_TYPE=Release
