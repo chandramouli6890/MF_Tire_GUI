@@ -14,7 +14,7 @@ jobs:
       - name: Install dependencies (CMake, Make, Qt, Qwt)
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake make g++ qt5-qmake qtbase5-dev qtchooser qtbase5-dev-tools libqt5gui5 libqt5core5a libqt5widgets5 libqwt-qt5-devA
+          sudo apt-get install -y cmake make g++ qt5-qmake qtbase5-dev qtchooser qtbase5-dev-tools libqt5gui5 libqt5core5a libqt5widgets5 libqwt-qt5-dev
 
       - name: Set Qt to use offscreen plugin
         run: |
