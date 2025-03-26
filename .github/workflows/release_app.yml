@@ -32,10 +32,19 @@ jobs:
       - name: Run CTest
         run: ctest --test-dir build --output-on-failure
 
+      - name: Create Tag
+        run: |
+          TAG_NAME="v$(date +'%Y%m%d%H%M%S')"  # Generate a unique tag based on the date/time
+          git tag $TAG_NAME
+          git push origin $TAG_NAME
+
+
+
       - name: Create Release
         if: success()
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ steps.create_tag.outputs.tag_name }}
           files: ./build/src/main # Change this to the correct executable path
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
