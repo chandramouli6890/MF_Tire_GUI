@@ -25,7 +25,7 @@ Once the build is complete, you can run the application using:
 ./build/src/MF_Tire_Visualizer
 ```
 
-# Contributing
+## Contributing
 
 Thank you for your interest in contributing! Contributions of all kinds, from
 bug reports to code, documentation, or suggestions for improvement are welcome.
