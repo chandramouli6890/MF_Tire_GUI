@@ -1,6 +1,8 @@
 #include "src/MainWindow.hpp"
 #include <QtTest/QtTest>
 
+const QString filename = "../../data/tire_data_longitudinal.yaml";
+
 const std::string yaml_test_data = R"(
 tire_data:
 - force_array:
@@ -32,7 +34,7 @@ void TestMainWindow::testSliderChangeTriggersReplot_data() {
 void TestMainWindow::testSliderChangeTriggersReplot() {
   QFETCH(QString, slider_name);
 
-  MainWindow window(nullptr, "../../tire_data_longitudinal.yaml");
+  MainWindow window(nullptr, filename);
   window.show();
 
   QSlider *slider = window.findChild<QSlider *>(slider_name + "_slider");
@@ -54,7 +56,7 @@ void TestMainWindow::testSliderChangeTriggersReplot() {
 }
 
 void TestMainWindow::testLoadReferenceDataEmitsParamsChanged() {
-  MainWindow window(nullptr, "../../tire_data_longitudinal.yaml");
+  MainWindow window(nullptr, filename);
   window.show();
 
   QSignalSpy spy(&window, &MainWindow::paramsChanged);
@@ -72,7 +74,7 @@ void TestMainWindow::testLoadReferenceDataEmitsParamsChanged() {
 }
 
 void TestMainWindow::testLoadReferenceDataChangesXYLabels() {
-  MainWindow window(nullptr, "../../tire_data_longitudinal.yaml");
+  MainWindow window(nullptr, filename);
   window.show();
 
   YAML::Node node = YAML::Load(yaml_test_data);
