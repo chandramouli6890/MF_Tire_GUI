@@ -1,16 +1,12 @@
-<script type="text/javascript" async
-  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
-</script>
-
 # Magic Formula Visualizer
 
 The **Magic Formula Tire Visualizer** is a Qt C++ graphical user interface
 designed to illustrate the impact of each Magic Formula parameter on the tire
 force vs. slip curve.
 
-$$
-F_x = F_z \cdot D \cdot \sin \left( C \cdot \arctan \left\{ B\kappa - E \left[ B\kappa - \arctan(B\kappa) \right] \right\} \right)
-$$
+<div align="center">
+    <img src="pics/MFEqn.svg">
+</div>
 
 ![MF_Tire_Visualizer_Demo](pics/MF_Tire_Visualizer_Demo.gif)
 
