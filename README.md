@@ -4,7 +4,7 @@ The **Magic Formula Tire Visualizer** is a Qt C++ graphical user interface
 designed to illustrate the impact of each Magic Formula parameter on the tire
 force vs. slip curve.
 
-![MF_Tire_Visualizer_Demo](./pics/MF_Tire_Visualizer_Demo.gif)
+![MF_Tire_Visualizer_Demo](pics/MF_Tire_Visualizer_Demo.gif)
 
 ## Building the Qt App
 
