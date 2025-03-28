@@ -1,5 +1,5 @@
 
-#define DEFAULT_FILENAME "../tire_data_longitudinal.yaml"
+#define DEFAULT_FILENAME "../data/tire_data_longitudinal.yaml"
 
 struct Value {
   double min;
