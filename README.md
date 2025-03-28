@@ -1,12 +1,43 @@
-# MF_Tire_GUI
-```MF_Tire_GUI``` is a Matlab GUI which helps to visualise the effect of each Magic Formula parameter on the tire longitudinal Force vs Slip Ratio curve. 
-The GUI is capable of visualising the following versions of Magic Formula tire models:
-1. Pacejka 92 (MF 5.2)
-2. Pacejka 1996 
+# Magic Formula Visualizer
 
-Aditionally, ```MF_Tire_GUI``` can be used to fit Tire Models. At the moment The fitting feaure is only available for MF v5.2. This GUI uses ```fminsearch``` optimization function of MATLAB which requires no fancy toolboxes to be installed.
+The **Magic Formula Tire Visualizer** is a Qt C++ graphical user interface
+designed to illustrate the impact of each Magic Formula parameter on the tire
+force vs. slip curve.
 
-Last tested Matlab Version: 2019b
+## Building the Qt App
+
+Before building the application, ensure you have all necessary dependencies.
+You can refer to the GitHub Actions [file](.github/workflows/run_tests.yml) for
+a list of required dependencies.
+
+To build the app, run the following commands:
+
+```
+git clone git@github.com:chandramouli6890/MF_Tire_GUI.git
+mkdir build && cd build
+cmake ..
+make
+```
+
+Once the build is complete, you can run the application using:
+
+```
+./build/src/MF_Tire_Visualizer
+```
+
+# Contributing
+
+Thank you for your interest in contributing! Contributions of all kinds, from
+bug reports to code, documentation, or suggestions for improvement are welcome.
+
+If you're submitting code via a pull request, we recommend including relevant
+tests. You can find example tests in the designated [test](.test) folder.
+
+To run the test suite, execute:
+```
+cd <repo>/build
+ctest
+```
 
 link to the original matlab file_exchange project 
 https://de.mathworks.com/matlabcentral/fileexchange/48568-mf_tire_gui
