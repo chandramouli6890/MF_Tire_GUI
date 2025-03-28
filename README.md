@@ -31,7 +31,7 @@ Thank you for your interest in contributing! Contributions of all kinds, from
 bug reports to code, documentation, or suggestions for improvement are welcome.
 
 If you're submitting code via a pull request, we recommend including relevant
-tests. You can find example tests in the designated [test](.test) folder.
+tests. You can find example tests in the designated [test](./test) folder.
 
 To run the test suite, execute:
 ```
