@@ -41,5 +41,4 @@ cd <repo>/build
 ctest
 ```
 
-link to the original matlab file_exchange project 
-https://de.mathworks.com/matlabcentral/fileexchange/48568-mf_tire_gui
+link to the original [matlab file_exchange project](https://de.mathworks.com/matlabcentral/fileexchange/48568-mf_tire_gui)
